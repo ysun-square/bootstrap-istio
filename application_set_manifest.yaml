@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: istio-bootstrap
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - project: base
+            repoURL: https://github.com/ysun-square/bootstrap-istio
+            chart: ./base
+            version: HEAD
+            namespace: istio-system
+            values: base/values.yaml
+          - project: istiod
+            repoURL: https://github.com/ysun-square/bootstrap-istio
+            chart: ./istiod
+            version: HEAD
+            namespace: istio-system
+            values: istiod/values.yaml
+  template:
+    metadata:
+      name: '{{project}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        chart: '{{chart}}'
+        targetRevision: '{{version}}'
+        helm:
+          valueFiles:
+            - '{{values}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+
