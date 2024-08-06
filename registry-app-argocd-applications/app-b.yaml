@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-b
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      values: |-
+        app:
+          name: app-b
+        istio:
+          sidecar:
+            enabled: true
+        dependencies:
+        - app-a
+        - app-c
+    path: registry-app
+    repoURL: https://github.com/ysun-square/bootstrap-istio
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+
